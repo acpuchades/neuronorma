@@ -26,7 +26,7 @@ ui <- fluidPage(
       div(
         h4("Input"),
         varSelectInput("ageColumn", label = "Age column", data = NULL),
-        varSelectInput("studiesColumn", label = "Studies column", data = NULL),
+        varSelectInput("educationColumn", label = "Education column", data = NULL),
         varSelectInput("rawTMTaColumn", label = "Raw TMTa score column", data = NULL),
         varSelectInput("rawTMTbColumn", label = "Raw TMTb score column", data = NULL),
 
@@ -69,7 +69,7 @@ app <- function(input, output, session) {
 
   observe({
     colnames <- names(inputData())
-    iparams <- c("ageColumn", "studiesColumn", "rawTMTaColumn", "rawTMTbColumn")
+    iparams <- c("ageColumn", "educationColumn", "rawTMTaColumn", "rawTMTbColumn")
     for (i in seq_along(iparams)) {
       defvalue <- ifelse(i <= length(colnames), colnames[i], NULL)
       updateVarSelectInput(session, iparams[i], data = inputData(), selected = defvalue)
@@ -88,7 +88,7 @@ app <- function(input, output, session) {
 
   outputData <- reactive({
     ageColumn <- req(input$ageColumn)
-    studiesColumn <- req(input$studiesColumn)
+    educationColumn <- req(input$educationColumn)
     rawTMTaColumn <- req(input$rawTMTaColumn)
     rawTMTbColumn <- req(input$rawTMTbColumn)
     adjTMTaColumn <- req(input$adjTMTaColumn)
@@ -97,10 +97,10 @@ app <- function(input, output, session) {
     inputData() %>%
       mutate({{ adjTMTaColumn }} := adjust_TMTa(raw = !!sym(rawTMTaColumn),
                                                 age = !!sym(ageColumn),
-                                                studies = !!sym(studiesColumn)),
+                                                education = !!sym(educationColumn)),
              {{ adjTMTbColumn }} := adjust_TMTb(raw = !!sym(rawTMTbColumn),
                                                 age = !!sym(ageColumn),
-                                                studies = !!sym(studiesColumn)))
+                                                education = !!sym(educationColumn)))
   })
 
   output$contents <- renderTable(outputData())

@@ -4,15 +4,15 @@ library(magrittr)
 #'
 #' @param raw Raw TMTa scores.
 #' @param age Age in years.
-#' @param studies Number of study years.
+#' @param education Number of education years.
 #' @return Normalized TMTa scores.
 #' @export
-adjust_TMTa <- function(raw, age, studies) {
+adjust_TMTa <- function(raw, age, education) {
   raw <- as.integer(raw)
   age <- as.integer(age)
-  studies <- as.integer(studies)
+  education <- as.integer(education)
   age_adjusted = adjust_TMTa_by_age(raw, age)
-  adjust_TMTa_by_studies(age_adjusted, age, studies)
+  adjust_TMTa_by_education(age_adjusted, age, education)
 }
 
 adjust_TMTa_by_age <- function(raw, age) {
@@ -28,20 +28,20 @@ adjust_TMTa_by_age <- function(raw, age) {
   age_adjusted
 }
 
-adjust_TMTa_by_studies <- function(nss_a, age, studies) {
-  data <- tibble::tibble(nss_a, age, studies) %>%
+adjust_TMTa_by_education <- function(nss_a, age, education) {
+  data <- tibble::tibble(nss_a, age, education) %>%
     dplyr::mutate(id = dplyr::row_number())
 
   ae_adjusted_lt50 <- data %>%
     dplyr::filter(age < 50) %>%
-    dplyr::left_join(TMTa_studies_lt50, by = c("age" = "Age",
-                                               "studies" = "Education")) %>%
+    dplyr::left_join(TMTa_education_lt50, by = c("age" = "Age",
+                                               "education" = "Education")) %>%
     dplyr::mutate(NSSae = nss_a + CF)
 
   ae_adjusted_gt50 <- data %>%
     dplyr::filter(age >= 50) %>%
-    dplyr::left_join(TMTa_studies_gt50, by = c("nss_a" = "NSSa",
-                                               "studies" = "Education"))
+    dplyr::left_join(TMTa_education_gt50, by = c("nss_a" = "NSSa",
+                                               "education" = "Education"))
 
   dplyr::bind_rows(ae_adjusted_lt50, ae_adjusted_gt50) %>%
     dplyr::left_join(data, ., by = "id") %$% NSSae
@@ -51,15 +51,15 @@ adjust_TMTa_by_studies <- function(nss_a, age, studies) {
 #'
 #' @param raw Raw TMTb scores.
 #' @param age Age in years.
-#' @param studies Number of study years.
+#' @param education Number of education years.
 #' @return Normalized TMTb scores.
 #' @export
-adjust_TMTb <- function(raw, age, studies) {
+adjust_TMTb <- function(raw, age, education) {
   raw <- as.integer(raw)
   age <- as.integer(age)
-  studies <- as.integer(studies)
+  education <- as.integer(education)
   age_adjusted = adjust_TMTb_by_age(raw, age)
-  adjust_TMTb_by_studies(age_adjusted, age, studies)
+  adjust_TMTb_by_education(age_adjusted, age, education)
 }
 
 adjust_TMTb_by_age <- function(raw, age) {
@@ -75,17 +75,17 @@ adjust_TMTb_by_age <- function(raw, age) {
   age_adjusted
 }
 
-adjust_TMTb_by_studies <- function(nss_a, age, studies) {
-  data <- tibble::tibble(nss_a, age, studies) %>%
+adjust_TMTb_by_education <- function(nss_a, age, education) {
+  data <- tibble::tibble(nss_a, age, education) %>%
     dplyr::mutate(id = dplyr::row_number())
 
   ae_adjusted_gt50 <- data %>%
     dplyr::filter(age >= 50) %>%
-    dplyr::left_join(TMTb_studies_gt50, by = c("nss_a" = "NSSa", "studies" = "Education"))
+    dplyr::left_join(TMTb_education_gt50, by = c("nss_a" = "NSSa", "education" = "Education"))
 
   ae_adjusted_lt50 <- data %>%
     dplyr::filter(age < 50) %>%
-    dplyr::left_join(TMTb_studies_lt50, by = c("nss_a" = "NSSa", "studies" = "Education"))
+    dplyr::left_join(TMTb_education_lt50, by = c("nss_a" = "NSSa", "education" = "Education"))
 
   dplyr::bind_rows(ae_adjusted_lt50, ae_adjusted_gt50) %>%
     dplyr::left_join(data, ., by = "id") %$% NSSae

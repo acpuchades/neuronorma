@@ -16,7 +16,7 @@ TMT_age <-
   tidyr::extract(TMTa, c("TMTa_l", "TMTa_r"), r"(\[(\d+|-Inf),(\d+|\+?Inf)\])", convert = TRUE) %>%
   tidyr::extract(TMTb, c("TMTb_l", "TMTb_r"), r"(\[(\d+|-Inf),(\d+|\+?Inf)\])", convert = TRUE)
 
-TMTa_studies_lt50 <-
+TMTa_education_lt50 <-
   suppressMessages(read_excel("data-raw/neuronorma.xlsx",
                               sheet = "TMTa <50 Education",
                               skip = 1)) %>%
@@ -24,7 +24,7 @@ TMTa_studies_lt50 <-
   pivot_longer(cols = "18":"49", names_to = "Age",
                names_transform = as.integer, values_to = "CF")
 
-TMTa_studies_gt50 <-
+TMTa_education_gt50 <-
   suppressMessages(read_excel("data-raw/neuronorma.xlsx",
                               sheet = "TMTa >50 Education",
                               skip = 1)) %>%
@@ -32,7 +32,7 @@ TMTa_studies_gt50 <-
   pivot_longer(cols = "0":"20", names_to = "Education",
                       names_transform = as.integer, values_to = "NSSae")
 
-TMTb_studies_lt50 <-
+TMTb_education_lt50 <-
   suppressMessages(read_excel("data-raw/neuronorma.xlsx",
                               sheet = "TMTb <50 Education",
                               skip = 1)) %>%
@@ -40,7 +40,7 @@ TMTb_studies_lt50 <-
   pivot_longer(cols = "8":"20", names_to = "Education",
                names_transform = as.integer, values_to = "NSSae")
 
-TMTb_studies_gt50 <-
+TMTb_education_gt50 <-
   suppressMessages(read_excel("data-raw/neuronorma.xlsx",
                               sheet = "TMTb >50 Education",
                               skip = 1)) %>%
@@ -48,6 +48,6 @@ TMTb_studies_gt50 <-
   pivot_longer(cols = "0":"20", names_to = "Education",
                names_transform = as.integer, values_to = "NSSae")
 
-usethis::use_data(TMT_age, TMTa_studies_lt50, TMTa_studies_gt50,
-                  TMTb_studies_gt50, TMTb_studies_lt50,
+usethis::use_data(TMT_age, TMTa_education_lt50, TMTa_education_gt50,
+                  TMTb_education_gt50, TMTb_education_lt50,
                   internal = TRUE, overwrite = TRUE)
