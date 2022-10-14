@@ -1,13 +1,12 @@
 library(dplyr)
 library(magrittr)
+library(neuronorma)
 library(readr)
 library(readxl)
 library(shiny)
 library(shinyjs)
 library(tools)
 library(writexl)
-
-library(neuronorma)
 
 fileTypes <- c(".csv", ".tsv", ".xls", ".xlsx")
 
