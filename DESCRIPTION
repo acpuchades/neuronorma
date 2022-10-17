@@ -1,10 +1,10 @@
 Package: neuronorma
-Title: Adjusts Cognitive Test Scores Based On NEURONORMA
+Title: Adjusts Cognitive Test Scores Based on NEURONORMA
 Version: 0.0.0.9000
 Authors@R:
     person("Alejandro", "Caravaca Puchades", , "acaravacapuchades@icloud.com",
            role = c("aut", "cre"), comment = c(ORCID = "0000-0003-2223-7335"))
-Description: This package provides functions to adjust cognitive test scores based on NEURONORMA.
+Description: Adjust cognitive test scores based on NEURONORMA studies.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -13,6 +13,6 @@ Imports:
     dplyr,
     magrittr,
     tibble
-Depends: 
+Depends:
     R (>= 2.10)
 LazyData: true
