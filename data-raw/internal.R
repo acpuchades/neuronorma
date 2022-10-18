@@ -4,65 +4,39 @@ library(readxl)
 library(stringr)
 library(tidyr)
 
-TMT_age <-
-  read_excel("data-raw/tables.xlsx",
-    sheet = "TMT Age",
-    col_types = c("text", "numeric", "text", "text")
-  ) %>%
+nn_tables_age <-
+  read_excel("data-raw/tables.xlsx", sheet = "Age") %>%
   fill(Age) %>%
-  mutate(across(c(Age, TMTa:TMTb), str_replace, r"(^>(\d+)$)", r"([\1,+Inf])")) %>%
-  mutate(across(c(Age, TMTa:TMTb), str_replace, r"(^<(\d+)$)", r"([-Inf,\1])")) %>%
-  mutate(across(c(Age, TMTa:TMTb), str_replace, r"(^(\d+)-(\d+)$)", r"([\1,\2])")) %>%
-  mutate(across(c(Age, TMTa:TMTb), str_replace, r"(^(\d+)$)", r"([\1,\1])")) %>%
-  tidyr::extract(Age, c("Age_l", "Age_r"), r"(\[(\d+|-Inf),(\d+|\+?Inf)\])", convert = TRUE) %>%
-  tidyr::extract(TMTa, c("TMTa_l", "TMTa_r"), r"(\[(\d+|-Inf),(\d+|\+?Inf)\])", convert = TRUE) %>%
-  tidyr::extract(TMTb, c("TMTb_l", "TMTb_r"), r"(\[(\d+|-Inf),(\d+|\+?Inf)\])", convert = TRUE)
+  mutate(
+    across(SS, as.integer),
+    across(-SS, str_replace, r"(^>(\d+|\d*\.\d+)$)", r"([\1,+Inf])"),
+    across(-SS, str_replace, r"(^<(\d+|\d*\.\d+)$)", r"([-Inf,\1])"),
+    across(-SS, str_replace, r"(^(\d+|\d*\.\d+)-(\d+|\d*\.\d+)$)", r"([\1,\2])"),
+    across(-SS, str_replace, r"(^(\d+|\d*\.\d+)$)", r"([\1,\1])")
+  ) %>%
+  tidyr::extract(Age, c("Age_l", "Age_r"), r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])", convert = TRUE) %>%
+  tidyr::extract(TMTa, c("TMTa_l", "TMTa_r"), r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])", convert = TRUE) %>%
+  tidyr::extract(TMTb, c("TMTb_l", "TMTb_r"), r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])", convert = TRUE) %>%
+  tidyr::extract(`ROCF Acc`, c("ROCF_Acc_l", "ROCF_Acc_r"), r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])", convert = TRUE) %>%
+  tidyr::extract(`ROCF DR Acc`, c("ROCF_DR_Acc_l", "ROCF_DR_Acc_r"), r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])", convert = TRUE)
 
-TMTa_education_lt50 <-
-  suppressMessages(read_excel("data-raw/tables.xlsx",
-    sheet = "TMTa <50 Education",
-    skip = 1
-  )) %>%
-  rename(Education = 1) %>%
+nn_tables_education <-
+  read_excel("data-raw/tables.xlsx", sheet = "Education", skip = 1, .name_repair = "minimal") %>%
+  setNames(c("Education", "TMTa_gt50",
+             "TMTb_lt50", "TMTb_gt50",
+             "ROCF_Acc_lt50", "ROCF_Acc_gt50",
+             "ROCF_DR_Acc_lt50", "ROCF_DR_Acc_gt50")) %>%
+  mutate(across(everything(), as.integer))
+
+nn_tables_TMTa_lt50 <-
+  read_excel("data-raw/tables.xlsx", sheet = "TMTa <50 Education", skip = 1) %>%
   pivot_longer(
     cols = "18":"49", names_to = "Age",
-    names_transform = as.integer, values_to = "CF"
-  )
+    names_transform = as.integer, values_to = "TMTa_lt50"
+  ) %>%
+  mutate(across(everything(), as.integer))
 
-TMTa_education_gt50 <-
-  suppressMessages(read_excel("data-raw/tables.xlsx",
-    sheet = "TMTa >50 Education",
-    skip = 1
-  )) %>%
-  rename(NSSa = 1) %>%
-  pivot_longer(
-    cols = "0":"20", names_to = "Education",
-    names_transform = as.integer, values_to = "NSSae"
-  )
-
-TMTb_education_lt50 <-
-  suppressMessages(read_excel("data-raw/tables.xlsx",
-    sheet = "TMTb <50 Education",
-    skip = 1
-  )) %>%
-  rename(NSSa = 1) %>%
-  pivot_longer(
-    cols = "8":"20", names_to = "Education",
-    names_transform = as.integer, values_to = "NSSae"
-  )
-
-TMTb_education_gt50 <-
-  suppressMessages(read_excel("data-raw/tables.xlsx",
-    sheet = "TMTb >50 Education",
-    skip = 1
-  )) %>%
-  rename(NSSa = 1) %>%
-  pivot_longer(
-    cols = "0":"20", names_to = "Education",
-    names_transform = as.integer, values_to = "NSSae"
-  )
-
-usethis::use_data(TMT_age, TMTa_education_lt50, TMTa_education_gt50,
-  TMTb_education_gt50, TMTb_education_lt50,
+usethis::use_data(
+  nn_tables_age, nn_tables_education, nn_tables_TMTa_lt50,
   internal = TRUE, overwrite = TRUE
 )
