@@ -22,10 +22,10 @@ nn_tables_age <-
 
 nn_tables_education <-
   read_excel("data-raw/tables.xlsx", sheet = "Education", skip = 1, .name_repair = "minimal") %>%
-  setNames(c("Education", "TMTa_gt50",
-             "TMTb_lt50", "TMTb_gt50",
-             "ROCF_Acc_lt50", "ROCF_Acc_gt50",
-             "ROCF_DR_Acc_lt50", "ROCF_DR_Acc_gt50")) %>%
+  setNames(c(
+    "Education", "TMTa_gt50", "TMTb_lt50", "TMTb_gt50",
+    "ROCF_Acc_lt50", "ROCF_Acc_gt50", "ROCF_DR_Acc_gt50"
+  )) %>%
   mutate(across(everything(), as.integer))
 
 nn_tables_TMTa_lt50 <-
@@ -36,7 +36,18 @@ nn_tables_TMTa_lt50 <-
   ) %>%
   mutate(across(everything(), as.integer))
 
+nn_tables_ROCF_DR_Acc_lt50 <-
+  read_excel("data-raw/tables.xlsx", sheet = "ROCF DR Acc <50 Education", skip = 1) %>%
+  pivot_longer(
+    cols = "18":"49", names_to = "Age",
+    names_transform = as.integer, values_to = "ROCF_DR_Acc_lt50"
+  ) %>%
+  mutate(across(everything(), as.integer))
+
 usethis::use_data(
-  nn_tables_age, nn_tables_education, nn_tables_TMTa_lt50,
+  nn_tables_age,
+  nn_tables_education,
+  nn_tables_TMTa_lt50,
+  nn_tables_ROCF_DR_Acc_lt50,
   internal = TRUE, overwrite = TRUE
 )
