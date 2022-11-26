@@ -1,53 +1,86 @@
-library(dplyr)
 library(magrittr)
-library(readxl)
-library(stringr)
-library(tidyr)
+
+parse_and_extract_ranges <- function(data, column, lsuffix = "_l", rsuffix = "_r") {
+  colname <- rlang::as_name(enquo(column))
+  data %>%
+    dplyr::mutate(
+      {{ column }} := {{ column }} %>%
+        stringr::str_replace(r"(^>(\d+|\d*\.\d+)$)", r"([\1,+Inf])") %>%
+        stringr::str_replace(r"(^<(\d+|\d*\.\d+)$)", r"([-Inf,\1])") %>%
+        stringr::str_replace(r"(^(\d+|\d*\.\d+)-(\d+|\d*\.\d+)$)", r"([\1,\2])") %>%
+        stringr::str_replace(r"(^(\d+|\d*\.\d+)$)", r"([\1,\1])")
+    ) %>%
+    tidyr::extract({{ column }},
+      c(paste0(colname, lsuffix), paste0(colname, rsuffix)),
+      r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])",
+      convert = TRUE
+    )
+}
 
 nn_tables_age <-
-  read_excel("data-raw/tables.xlsx", sheet = "Age") %>%
-  fill(Age) %>%
-  mutate(
-    across(SS, as.integer),
-    across(-SS, str_replace, r"(^>(\d+|\d*\.\d+)$)", r"([\1,+Inf])"),
-    across(-SS, str_replace, r"(^<(\d+|\d*\.\d+)$)", r"([-Inf,\1])"),
-    across(-SS, str_replace, r"(^(\d+|\d*\.\d+)-(\d+|\d*\.\d+)$)", r"([\1,\2])"),
-    across(-SS, str_replace, r"(^(\d+|\d*\.\d+)$)", r"([\1,\1])")
-  ) %>%
-  tidyr::extract(Age, c("Age_l", "Age_r"), r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])", convert = TRUE) %>%
-  tidyr::extract(TMTa, c("TMTa_l", "TMTa_r"), r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])", convert = TRUE) %>%
-  tidyr::extract(TMTb, c("TMTb_l", "TMTb_r"), r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])", convert = TRUE) %>%
-  tidyr::extract(`ROCF Acc`, c("ROCF_Acc_l", "ROCF_Acc_r"), r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])", convert = TRUE) %>%
-  tidyr::extract(`ROCF DR Acc`, c("ROCF_DR_Acc_l", "ROCF_DR_Acc_r"), r"(\[(\d+|\d*\.\d+|-Inf),(\d+|\d*\.\d+|\+?Inf)\])", convert = TRUE)
+  readxl::read_excel("data-raw/neuronorma.xlsx", sheet = "Age") %>%
+  tidyr::fill(Age) %>%
+  dplyr::mutate(SS = as.integer(SS)) %>%
+  parse_and_extract_ranges(Age) %>%
+  parse_and_extract_ranges(TMTa) %>%
+  parse_and_extract_ranges(TMTb) %>%
+  parse_and_extract_ranges(ROCF_Acc) %>%
+  parse_and_extract_ranges(ROCF_DR_Acc)
+
+nc_tables_age <-
+  readxl::read_excel("data-raw/normacog.xlsx", sheet = "Age") %>%
+  tidyr::fill(Age) %>%
+  dplyr::mutate(SS = as.integer(SS)) %>%
+  parse_and_extract_ranges(Age) %>%
+  parse_and_extract_ranges(HVLT_A1) %>%
+  parse_and_extract_ranges(HVLT_TR) %>%
+  parse_and_extract_ranges(HVLT_A4) %>%
+  parse_and_extract_ranges(HVLT_DI)
 
 nn_tables_education <-
-  read_excel("data-raw/tables.xlsx", sheet = "Education", skip = 1, .name_repair = "minimal") %>%
+  readxl::read_excel(
+    "data-raw/neuronorma.xlsx",
+    sheet = "Education",
+    skip = 1, .name_repair = "minimal"
+  ) %>%
   setNames(c(
     "Education", "TMTa_gt50", "TMTb_lt50", "TMTb_gt50",
     "ROCF_Acc_lt50", "ROCF_Acc_gt50", "ROCF_DR_Acc_gt50"
   )) %>%
-  mutate(across(everything(), as.integer))
+  dplyr::mutate(across(everything(), as.integer))
+
+nc_tables_education <-
+  readxl::read_excel("data-raw/normacog.xlsx", sheet = "Education") %>%
+  dplyr::mutate(across(everything(), as.integer))
 
 nn_tables_TMTa_lt50 <-
-  read_excel("data-raw/tables.xlsx", sheet = "TMTa <50 Education", skip = 1) %>%
-  pivot_longer(
+  readxl::read_excel(
+    "data-raw/neuronorma.xlsx",
+    sheet = "TMTa <50 Education", skip = 1
+  ) %>%
+  tidyr::pivot_longer(
     cols = "18":"49", names_to = "Age",
     names_transform = as.integer, values_to = "TMTa_lt50"
   ) %>%
-  mutate(across(everything(), as.integer))
+  dplyr::mutate(across(everything(), as.integer))
 
 nn_tables_ROCF_DR_Acc_lt50 <-
-  read_excel("data-raw/tables.xlsx", sheet = "ROCF DR Acc <50 Education", skip = 1) %>%
-  pivot_longer(
+  readxl::read_excel(
+    "data-raw/neuronorma.xlsx",
+    sheet = "ROCF DR Acc <50 Education", skip = 1
+  ) %>%
+  tidyr::pivot_longer(
     cols = "18":"49", names_to = "Age",
     names_transform = as.integer, values_to = "ROCF_DR_Acc_lt50"
   ) %>%
-  mutate(across(everything(), as.integer))
+  dplyr::mutate(across(everything(), as.integer))
 
 usethis::use_data(
   nn_tables_age,
   nn_tables_education,
   nn_tables_TMTa_lt50,
   nn_tables_ROCF_DR_Acc_lt50,
+  nc_tables_age,
+  nc_tables_education,
   internal = TRUE, overwrite = TRUE
 )

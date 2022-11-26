@@ -1,0 +1,3 @@
+# neuronorma
+
+Provides functions to adjust cognitive test scores on Spanish population based on different normalization studies (NEURONORMA, Normacog).

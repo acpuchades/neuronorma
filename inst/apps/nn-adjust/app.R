@@ -1,13 +1,14 @@
 library(dplyr)
 library(haven)
 library(magrittr)
-library(neuronorma)
 library(readr)
 library(readxl)
 library(shiny)
 library(shinyjs)
 library(tools)
 library(writexl)
+
+library(neuronorma)
 
 is_multi_data_file <- function(path) {
   tools::file_ext(path) %in% c("xls", "xlsx")
@@ -49,6 +50,10 @@ ui <- fluidPage(
           varSelectInput("raw_tmt_b_columns", label = "Raw TMTb score columns", data = NULL, multiple = TRUE),
           varSelectInput("raw_rocf_acc_columns", label = "Raw ROCF score columns", data = NULL, multiple = TRUE),
           varSelectInput("raw_rocf_dr_acc_columns", label = "Raw ROCF DR score columns", data = NULL, multiple = TRUE),
+          varSelectInput("raw_hvlt_a1_columns", label = "Raw HVLT A1 score columns", data = NULL, multiple = TRUE),
+          varSelectInput("raw_hvlt_tr_columns", label = "Raw HVLT TR score columns", data = NULL, multiple = TRUE),
+          varSelectInput("raw_hvlt_a4_columns", label = "Raw HVLT A4 score columns", data = NULL, multiple = TRUE),
+          varSelectInput("raw_hvlt_di_columns", label = "Raw HVLT DI score columns", data = NULL, multiple = TRUE),
           selectInput("output_format", label = "Output format", choices = output_file_types),
           downloadButton("download", "Download data"),
         )
@@ -91,6 +96,10 @@ app <- function(input, output, session) {
     updateVarSelectInput(session, "raw_tmt_b_columns", data = input_data())
     updateVarSelectInput(session, "raw_rocf_acc_columns", data = input_data())
     updateVarSelectInput(session, "raw_rocf_dr_acc_columns", data = input_data())
+    updateVarSelectInput(session, "raw_hvlt_a1_columns", data = input_data())
+    updateVarSelectInput(session, "raw_hvlt_tr_columns", data = input_data())
+    updateVarSelectInput(session, "raw_hvlt_a4_columns", data = input_data())
+    updateVarSelectInput(session, "raw_hvlt_di_columns", data = input_data())
   })
 
   output_data <- reactive({
@@ -104,16 +113,36 @@ app <- function(input, output, session) {
           .names = "{.col}_adjusted"
         ),
         across(c(!!!input$raw_tmt_b_columns), adjust_TMTb,
-               age = !!age_column,
-               education = !!education_column,
-               .names = "{.col}_adjusted"
+          age = !!age_column,
+          education = !!education_column,
+          .names = "{.col}_adjusted"
         ),
         across(c(!!!input$raw_rocf_acc_columns), adjust_ROCF_Acc,
-               age = !!age_column,
-               education = !!education_column,
-               .names = "{.col}_adjusted"
+          age = !!age_column,
+          education = !!education_column,
+          .names = "{.col}_adjusted"
         ),
         across(c(!!!input$raw_rocf_dr_acc_columns), adjust_ROCF_DR_Acc,
+          age = !!age_column,
+          education = !!education_column,
+          .names = "{.col}_adjusted"
+        ),
+        across(c(!!!input$raw_hvlt_a1_columns), adjust_HVLT_A1,
+          age = !!age_column,
+          education = !!education_column,
+          .names = "{.col}_adjusted"
+        ),
+        across(c(!!!input$raw_hvlt_tr_columns), adjust_HVLT_TR,
+          age = !!age_column,
+          education = !!education_column,
+          .names = "{.col}_adjusted"
+        ),
+        across(c(!!!input$raw_hvlt_a4_columns), adjust_HVLT_A4,
+          age = !!age_column,
+          education = !!education_column,
+          .names = "{.col}_adjusted"
+        ),
+        across(c(!!!input$raw_hvlt_di_columns), adjust_HVLT_DI,
           age = !!age_column,
           education = !!education_column,
           .names = "{.col}_adjusted"
