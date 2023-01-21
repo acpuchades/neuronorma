@@ -44,6 +44,7 @@ ui <- fluidPage(
       hidden(
         div(
           id = "params",
+          textInput("output_suffix", label = "Output suffix", value = "_adjusted"),
           varSelectInput("age_column", label = "Age column", data = NULL),
           varSelectInput("education_column", label = "Education column", data = NULL),
           varSelectInput("raw_tmt_a_columns", label = "Raw TMTa score columns", data = NULL, multiple = TRUE),
@@ -105,47 +106,48 @@ app <- function(input, output, session) {
   output_data <- reactive({
     age_column <- req(input$age_column)
     education_column <- req(input$education_column)
+    output_name <- paste0("{.col}", req(input$output_suffix))
     input_data() %>%
       mutate(
         across(c(!!!input$raw_tmt_a_columns), adjust_TMTa,
           age = !!age_column,
           education = !!education_column,
-          .names = "{.col}_adjusted"
+          .names = !!output_name
         ),
         across(c(!!!input$raw_tmt_b_columns), adjust_TMTb,
           age = !!age_column,
           education = !!education_column,
-          .names = "{.col}_adjusted"
+          .names = !!output_name
         ),
         across(c(!!!input$raw_rocf_acc_columns), adjust_ROCF_Acc,
           age = !!age_column,
           education = !!education_column,
-          .names = "{.col}_adjusted"
+          .names = !!output_name
         ),
         across(c(!!!input$raw_rocf_dr_acc_columns), adjust_ROCF_DR_Acc,
           age = !!age_column,
           education = !!education_column,
-          .names = "{.col}_adjusted"
+          .names = !!output_name
         ),
         across(c(!!!input$raw_hvlt_a1_columns), adjust_HVLT_A1,
           age = !!age_column,
           education = !!education_column,
-          .names = "{.col}_adjusted"
+          .names = !!output_name
         ),
         across(c(!!!input$raw_hvlt_tr_columns), adjust_HVLT_TR,
           age = !!age_column,
           education = !!education_column,
-          .names = "{.col}_adjusted"
+          .names = !!output_name
         ),
         across(c(!!!input$raw_hvlt_a4_columns), adjust_HVLT_A4,
           age = !!age_column,
           education = !!education_column,
-          .names = "{.col}_adjusted"
+          .names = !!output_name
         ),
         across(c(!!!input$raw_hvlt_di_columns), adjust_HVLT_DI,
           age = !!age_column,
           education = !!education_column,
-          .names = "{.col}_adjusted"
+          .names = !!output_name
         )
       )
   })
