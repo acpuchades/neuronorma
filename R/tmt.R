@@ -32,23 +32,21 @@ normalize_TMTa_by_age <- function(raw, age) {
 }
 
 adjust_TMTa_by_education <- function(nss_a, age, education) {
-  . <- NSSae <- TMTa_lt50 <- TMTa_gt50 <- NULL
+  . <- NSSae <- TMTa_lt50 <- TMTa_gt50 <- Education_l <- Education_r <- NULL
 
   data <- tibble::tibble(nss_a, age, education) %>%
     dplyr::mutate(id = dplyr::row_number())
 
   ae_adjusted_lt50 <- data %>%
     dplyr::filter(age >= 18, age < 50) %>%
-    dplyr::left_join(nn_tables_TMTa_lt50, by = c(
-      "age" = "Age", "education" = "Education"
-    )) %>%
+    dplyr::left_join(nn_tables_TMTa_lt50, by = c("age" = "Age")) %>%
+    dplyr::filter(education >= Education_l & education <= Education_r) %>%
     dplyr::mutate(NSSae = nss_a + TMTa_lt50)
 
   ae_adjusted_gt50 <- data %>%
     dplyr::filter(age >= 50) %>%
-    dplyr::left_join(nn_tables_education,
-      by = c("education" = "Education")
-    ) %>%
+    dplyr::left_join(nn_tables_education, by = character()) %>%
+    dplyr::filter(education >= Education_l & education <= Education_r) %>%
     dplyr::mutate(NSSae = nss_a + TMTa_gt50)
 
   dplyr::bind_rows(ae_adjusted_lt50, ae_adjusted_gt50) %>%
@@ -90,17 +88,16 @@ normalize_TMTb_by_age <- function(raw, age) {
 }
 
 adjust_TMTb_by_education <- function(nss_a, age, education) {
-  id <- NSSae <- NULL
+  id <- NSSae <- Education_l <- Education_r <- NULL
 
   ae_adjusted <- tibble::tibble(nss_a, age, education) %>%
     dplyr::mutate(id = dplyr::row_number()) %>%
-    dplyr::left_join(nn_tables_education,
-      by = c("education" = "Education")
-    ) %>%
+    dplyr::left_join(nn_tables_education, by = character()) %>%
+    dplyr::filter(education >= Education_l & education <= Education_r) %>%
     dplyr::mutate(NSSae = dplyr::case_when(
       age >= 18 & age < 50 ~ nss_a + TMTb_lt50,
       age >= 50 ~ nss_a + TMTb_gt50,
-      TRUE ~ NA_integer_
+      TRUE ~ NA_real_
     ))
 
   ae_adjusted %>%

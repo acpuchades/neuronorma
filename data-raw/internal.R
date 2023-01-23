@@ -1,3 +1,4 @@
+library(rlang)
 library(magrittr)
 
 parse_and_extract_ranges <- function(data, column, lsuffix = "_l", rsuffix = "_r") {
@@ -47,11 +48,11 @@ nn_tables_education <-
     "Education", "TMTa_gt50", "TMTb_lt50", "TMTb_gt50",
     "ROCF_Acc_lt50", "ROCF_Acc_gt50", "ROCF_DR_Acc_gt50"
   )) %>%
-  dplyr::mutate(across(everything(), as.integer))
+  parse_and_extract_ranges(Education)
 
 nc_tables_education <-
   readxl::read_excel("data-raw/normacog.xlsx", sheet = "Education") %>%
-  dplyr::mutate(across(everything(), as.integer))
+  parse_and_extract_ranges(Education)
 
 nn_tables_TMTa_lt50 <-
   readxl::read_excel(
@@ -62,7 +63,7 @@ nn_tables_TMTa_lt50 <-
     cols = "18":"49", names_to = "Age",
     names_transform = as.integer, values_to = "TMTa_lt50"
   ) %>%
-  dplyr::mutate(across(everything(), as.integer))
+  parse_and_extract_ranges(Education)
 
 nn_tables_ROCF_DR_Acc_lt50 <-
   readxl::read_excel(
@@ -73,7 +74,7 @@ nn_tables_ROCF_DR_Acc_lt50 <-
     cols = "18":"49", names_to = "Age",
     names_transform = as.integer, values_to = "ROCF_DR_Acc_lt50"
   ) %>%
-  dplyr::mutate(across(everything(), as.integer))
+  parse_and_extract_ranges(Education)
 
 usethis::use_data(
   nn_tables_age,

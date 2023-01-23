@@ -14,7 +14,7 @@ adjust_HVLT_A1 <- function(raw, age, education) {
 }
 
 normalize_HVLT_A1_by_age <- function(raw, age) {
-    . <- Age_l <- Age_r <- HVLA_A1_l <- HVLT_A1_r <- SS <- NULL
+    . <- Age_l <- Age_r <- HVLT_A1_l <- HVLT_A1_r <- SS <- NULL
 
     data <- tibble::tibble(raw, age) %>%
         dplyr::mutate(id = dplyr::row_number())
@@ -32,12 +32,11 @@ normalize_HVLT_A1_by_age <- function(raw, age) {
 }
 
 adjust_HVLT_A1_by_education <- function(nss_a, education) {
-    . <- NSSae <- HVLT_A1 <- NULL
+    . <- NSSae <- HVLT_A1 <- Education_l <- Education_r <- NULL
 
     tibble::tibble(nss_a, education) %>%
-        dplyr::left_join(nc_tables_education,
-            by = c("education" = "Education")
-        ) %>%
+        dplyr::left_join(nc_tables_education, by = character()) %>%
+        dplyr::filter(education >= Education_l & education <= Education_r) %>%
         dplyr::mutate(NSSae = nss_a + HVLT_A1) %>%
         dplyr::pull(NSSae)
 }
@@ -76,12 +75,11 @@ normalize_HVLT_TR_by_age <- function(raw, age) {
 }
 
 adjust_HVLT_TR_by_education <- function(nss_a, education) {
-    . <- NSSae <- HVLT_A4 <- NULL
+    . <- NSSae <- HVLT_TR <- Education_l <- Education_r <- NULL
 
     tibble::tibble(nss_a, education) %>%
-        dplyr::left_join(nc_tables_education,
-            by = c("education" = "Education")
-        ) %>%
+        dplyr::left_join(nc_tables_education, by = character()) %>%
+        dplyr::filter(education >= Education_l & education <= Education_r) %>%
         dplyr::mutate(NSSae = nss_a + HVLT_TR) %>%
         dplyr::pull(NSSae)
 }
@@ -102,7 +100,7 @@ adjust_HVLT_A4 <- function(raw, age, education) {
 }
 
 normalize_HVLT_A4_by_age <- function(raw, age) {
-    . <- Age_l <- Age_r <- HVLA_A4_l <- HVLT_A4_r <- SS <- NULL
+    . <- Age_l <- Age_r <- HVLT_A4_l <- HVLT_A4_r <- SS <- NULL
 
     data <- tibble::tibble(raw, age) %>%
         dplyr::mutate(id = dplyr::row_number())
@@ -120,12 +118,11 @@ normalize_HVLT_A4_by_age <- function(raw, age) {
 }
 
 adjust_HVLT_A4_by_education <- function(nss_a, education) {
-    . <- NSSae <- HVLT_A4 <- NULL
+    . <- NSSae <- HVLT_A4 <- Education_l <- Education_r <- NULL
 
     tibble::tibble(nss_a, education) %>%
-        dplyr::left_join(nc_tables_education,
-            by = c("education" = "Education")
-        ) %>%
+        dplyr::left_join(nc_tables_education, by = character()) %>%
+        dplyr::filter(education >= Education_l & education <= Education_r) %>%
         dplyr::mutate(NSSae = nss_a + HVLT_A4) %>%
         dplyr::pull(NSSae)
 }
@@ -146,7 +143,7 @@ adjust_HVLT_DI <- function(raw, age, education) {
 }
 
 normalize_HVLT_DI_by_age <- function(raw, age) {
-    . <- Age_l <- Age_r <- HVLA_DI_l <- HVLT_DI_r <- SS <- NULL
+    . <- Age_l <- Age_r <- HVLT_DI_l <- HVLT_DI_r <- SS <- NULL
 
     data <- tibble::tibble(raw, age) %>%
         dplyr::mutate(id = dplyr::row_number())
@@ -164,12 +161,11 @@ normalize_HVLT_DI_by_age <- function(raw, age) {
 }
 
 adjust_HVLT_DI_by_education <- function(nss_a, education) {
-    . <- NSSae <- HVLT_DI <- NULL
+    . <- NSSae <- HVLT_DI <- Education_l <- Education_r <- NULL
 
     tibble::tibble(nss_a, education) %>%
-        dplyr::left_join(nc_tables_education,
-            by = c("education" = "Education")
-        ) %>%
+        dplyr::left_join(nc_tables_education, by = character()) %>%
+        dplyr::filter(education >= Education_l & education <= Education_r) %>%
         dplyr::mutate(NSSae = nss_a + HVLT_DI) %>%
         dplyr::pull(NSSae)
 }
