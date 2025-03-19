@@ -14,18 +14,22 @@ adjust_ROCF_Acc <- function(raw, age, education) {
 }
 
 normalize_ROCF_Acc_by_age <- function(raw, age) {
-  . <- Age_l <- Age_r <- ROCF_Acc_l <- ROCF_Acc_r <- SS <- NULL
+  . <- id <- Age_l <- Age_r <- ROCF_Acc_l <- ROCF_Acc_r <- SS <- NULL
 
   data <- tibble::tibble(raw, age) %>%
     dplyr::mutate(id = dplyr::row_number())
 
   age_adjusted <- data %>%
-    dplyr::left_join(nn_tables_age, by = character()) %>%
-    dplyr::filter(
-      age >= Age_l & age <= Age_r,
-      raw >= ROCF_Acc_l & raw <= ROCF_Acc_r
+    dplyr::left_join(
+      nn_tables_age,
+      by = dplyr::join_by(
+        age >= Age_l, age <= Age_r,
+        raw >= ROCF_Acc_l, raw <= ROCF_Acc_r
+      ),
+      relationship = "many-to-one",
+      na_matches = "never"
     ) %>%
-    dplyr::left_join(data, ., by = "id") %>%
+    dplyr::arrange(id) %>%
     dplyr::pull(SS)
 
   age_adjusted
@@ -37,8 +41,12 @@ adjust_ROCF_Acc_by_education <- function(nss_a, age, education) {
 
   ae_adjusted <- tibble::tibble(nss_a, age, education) %>%
     dplyr::mutate(id = dplyr::row_number()) %>%
-    dplyr::left_join(nn_tables_education, by = character()) %>%
-    dplyr::filter(education >= Education_l & education <= Education_r) %>%
+    dplyr::left_join(
+      nn_tables_education,
+      by = dplyr::join_by(education >= Education_l, education <= Education_r),
+      relationship = "many-to-one",
+      na_matches = "never"
+    ) %>%
     dplyr::mutate(NSSae = dplyr::case_when(
       age > 18 & age < 50 ~ nss_a + ROCF_Acc_lt50,
       age >= 50 ~ nss_a + ROCF_Acc_gt50,
@@ -66,18 +74,22 @@ adjust_ROCF_DR_Acc <- function(raw, age, education) {
 }
 
 normalize_ROCF_DR_Acc_by_age <- function(raw, age) {
-  . <- Age_l <- Age_r <- ROCF_DR_Acc_l <- ROCF_DR_Acc_r <- SS <- NULL
+  . <- id <- Age_l <- Age_r <- ROCF_DR_Acc_l <- ROCF_DR_Acc_r <- SS <- NULL
 
   data <- tibble::tibble(raw, age) %>%
     dplyr::mutate(id = dplyr::row_number())
 
   age_adjusted <- data %>%
-    dplyr::left_join(nn_tables_age, by = character()) %>%
-    dplyr::filter(
-      age >= Age_l & age <= Age_r,
-      raw >= ROCF_DR_Acc_l & raw <= ROCF_DR_Acc_r
+    dplyr::left_join(
+      nn_tables_age,
+      by = dplyr::join_by(
+        age >= Age_l, age <= Age_r,
+        raw >= ROCF_DR_Acc_l, raw <= ROCF_DR_Acc_r
+      ),
+      relationship = "many-to-one",
+      na_matches = "never"
     ) %>%
-    dplyr::left_join(data, ., by = "id") %>%
+    dplyr::arrange(id) %>%
     dplyr::pull(SS)
 
   age_adjusted
@@ -92,17 +104,25 @@ adjust_ROCF_DR_Acc_by_education <- function(nss_a, age, education) {
 
   ae_adjusted_lt50 <- data %>%
     dplyr::filter(age >= 18, age < 50) %>%
-    dplyr::left_join(nn_tables_ROCF_DR_Acc_lt50, by = c("age" = "Age")) %>%
-    dplyr::filter(education >= Education_l & education <= Education_r) %>%
+    dplyr::left_join(
+      nn_tables_ROCF_DR_Acc_lt50,
+      by = dplyr::join_by(age == Age, education >= Education_l, education <= Education_r),
+      relationship = "many-to-one",
+      na_matches = "never"
+    ) %>%
     dplyr::mutate(NSSae = nss_a + ROCF_DR_Acc_lt50)
 
   ae_adjusted_gt50 <- data %>%
     dplyr::filter(age >= 50) %>%
-    dplyr::left_join(nn_tables_education, by = character()) %>%
-    dplyr::filter(education >= Education_l & education <= Education_r) %>%
+    dplyr::left_join(
+      nn_tables_education,
+      by = dplyr::join_by(education >= Education_l, education <= Education_r),
+      relationship = "many-to-one",
+      na_matches = "never"
+    ) %>%
     dplyr::mutate(NSSae = nss_a + ROCF_DR_Acc_gt50)
 
-  dplyr::bind_rows(ae_adjusted_lt50, ae_adjusted_gt50) %>%
-    dplyr::left_join(data, ., by = "id") %>%
+  data %>%
+    dplyr::left_join(dplyr::bind_rows(ae_adjusted_lt50, ae_adjusted_gt50), by = "id") %>%
     dplyr::pull(NSSae)
 }
