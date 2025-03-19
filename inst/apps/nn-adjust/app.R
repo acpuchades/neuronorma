@@ -70,13 +70,14 @@ app <- function(input, output, session) {
   observeEvent(input$input_file, {
     path <- req(input$input_file)$datapath
     if (is_multi_data_file(path)) {
-      updateSelectInput(session, "sheet_name", choices = excel_sheets(path))
+      datasheets <- excel_sheets(path)
+      updateSelectInput(session, "sheet_name", choices = datasheets)
       show("sheet_name")
     } else {
       updateSelectInput(session, "sheet_name", choices = NULL)
       hide("sheet_name")
-      show("params")
     }
+    show("params")
   })
 
   input_data <- reactive({
